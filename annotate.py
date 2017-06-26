@@ -61,7 +61,8 @@ class Annotator:
         if os.path.exists(gt_path):
             gt_file = open(gt_path, 'r')
             gt = gt_file.read().split(',')
-            self.bbox.set(int(gt[0]), int(gt[1]), int(gt[2]), int(gt[3]))
+            if len(gt) == 4:
+                self.bbox.set(int(gt[0]), int(gt[1]), int(gt[2]), int(gt[3]))
 
         # State to indicate is drawing bounding box or not
         self.drawing = False
