@@ -23,17 +23,20 @@ if len(sys.argv) < 2:
     print('Usage: Python ' + sys.argv[0] + ' folder')
     sys.exit(-1)
 
-# Augment images by illumination variation.
-# TODO: Support more augumentation instructions.
+# Augment images by applygin illumination variation.
 aug_iv = True
+# Augment images by blurring.
+aug_blur = True
 
 # Sequence of image augmentation instructions.
-# Only support darking and brightening (for illumination variation) currently.
 darken_seq = iaa.Sequential([
     iaa.Multiply(0.3)
 ])
 brighten_seq = iaa.Sequential([
     iaa.Multiply(1.5)
+])
+blur_seq = iaa.Sequential([
+    iaa.AverageBlur(7)
 ])
 
 # Find all subdirectories and sort by directory name.
@@ -50,6 +53,7 @@ for dir_path in dirs:
     target_gt = open(input_dir + '/target_gt.txt').read()
     search_gt = open(input_dir + '/search_gt.txt').read()
 
+    # Augmentation by applying illumination variation.
     if aug_iv:
         # Darken and lighten the images.
         darken_target_img = darken_seq.augment_image(input_target_img)
@@ -65,3 +69,15 @@ for dir_path in dirs:
         store_result(output_dir_prefix + '_dark_to_bright', darken_target_img, brighten_search_img, target_gt, search_gt)
         store_result(output_dir_prefix + '_bright_to_normal', brighten_target_img, input_search_img, target_gt, search_gt)
         store_result(output_dir_prefix + '_bright_to_dark', brighten_target_img, darken_search_img, target_gt, search_gt)
+
+    # Augmentation by applying blurring
+    if aug_blur:
+        # Blur the images.
+        blur_target_img = blur_seq.augment_image(input_target_img)
+        blur_search_img = blur_seq.augment_image(input_search_img)
+
+        # Store the images in different combinations.
+        output_dir_prefix = root_dir + '+BLR/' + dir_path
+        store_result(output_dir_prefix + '_normal_to_blur', input_target_img, blur_search_img, target_gt, search_gt)
+        store_result(output_dir_prefix + '_blur_to_normal', blur_target_img, input_search_img, target_gt, search_gt)
+        store_result(output_dir_prefix + '_blur_to_blur', blur_target_img, blur_search_img, target_gt, search_gt)
